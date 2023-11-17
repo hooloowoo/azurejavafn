@@ -5,7 +5,11 @@ import java.util.Optional;
 import com.microsoft.azure.functions.HttpRequestMessage;
 import com.microsoft.azure.functions.HttpResponseMessage;
 import com.microsoft.azure.functions.HttpStatus;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class WebToLeadResponse {
     
     private String responseMessage;
@@ -18,19 +22,11 @@ public class WebToLeadResponse {
         setHasValidationError(false);
     }
 
-    public String getResponseMessage() {
-        return this.responseMessage;
-    }
-
     public void setResponseMessage(String responseMessage) {
         this.responseMessage = responseMessage;
     }
 
     public Boolean isHasError() {
-        return this.hasError;
-    }
-
-    public Boolean getHasError() {
         return this.hasError;
     }
 
@@ -42,15 +38,11 @@ public class WebToLeadResponse {
         return this.hasValidationError;
     }
 
-    public Boolean getHasValidationError() {
-        return this.hasValidationError;
-    }
-
     public void setHasValidationError(Boolean hasValidationError) {
         this.hasValidationError = hasValidationError;
     }
 
-    public HttpResponseMessage getHttpResponseForRequest(HttpRequestMessage<Optional<WebToLeadData>> request) {
+    public HttpStatus getStatusCode() {
         HttpStatus statusCode;
         if(this.hasError) {
             if(this.hasValidationError) {
@@ -62,12 +54,9 @@ public class WebToLeadResponse {
             // TODO: Future should be CREATED;
             statusCode = HttpStatus.OK;
         }
-
-        return request.createResponseBuilder(statusCode)
-            .body(getMessageAsJSON())
-            .header("Content-Type", "application/json")
-            .build();
+        return statusCode;
     }
+
 
     public static WebToLeadResponse getNullErrorResponse() {
         WebToLeadResponse wtlresp = new WebToLeadResponse();
@@ -87,7 +76,7 @@ public class WebToLeadResponse {
 
     public static WebToLeadResponse getOkResponse() {
         WebToLeadResponse wtlresp = new WebToLeadResponse();
-        wtlresp.setResponseMessage("Lead processed");
+        wtlresp.setResponseMessage("Lead processed. ");
         return wtlresp;
     }
 
@@ -98,7 +87,7 @@ public class WebToLeadResponse {
         return wtlresp;
     }
 
-    private String getMessageAsJSON() {
-        return "{\"Message\": \"" + this.responseMessage + "\"}";
+    public String getMessageAsJSON() {
+        return "{\"Message\": \"" + responseMessage + "\"}";
     }
 }

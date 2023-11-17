@@ -1,67 +1,111 @@
 package com.nn.hu.salesforce.webtolead;
 
-import java.util.Optional;
-import java.util.logging.Logger;
-
+import com.google.gson.Gson;
 import com.microsoft.azure.functions.ExecutionContext;
 import com.microsoft.azure.functions.HttpRequestMessage;
+import com.microsoft.azure.functions.HttpResponseMessage;
 import com.nn.hu.salesforce.webtolead.data.WebToLeadData;
 import com.nn.hu.salesforce.webtolead.data.WebToLeadResponse;
 
-public class WebToLeadHandler {
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 
-    private Logger wtlLogger;
-    // private ExecutionContext wtfContext;
-    private HttpRequestMessage<Optional<WebToLeadData>> httpRequest;
+public class WebToLeadHandler<T> {
 
-    public WebToLeadHandler(ExecutionContext context, HttpRequestMessage<Optional<WebToLeadData>> request) {
-        // this.wtfContext = context;
-        this.wtlLogger = context.getLogger();
+    private final Logger logger;
+    private final HttpRequestMessage<Optional<T>> httpRequest;
+
+    public WebToLeadHandler(ExecutionContext context, HttpRequestMessage<Optional<T>> request) {
+        this.logger = context.getLogger();
         this.httpRequest = request;
+        logger.info("WebToLead handler initialized...");
+    }
 
-        wtlLogger.info("WebToLead handler initialized...");
+    public HttpResponseMessage handleRequest() {
+        T wtlData = httpRequest.getBody().orElse(null);
+        WebToLeadResponse wtlResponse = null;
+        HttpResponseMessage wtlResponseMessage = null;
+        WebToLeadData data = null;
+        if (wtlData == null) {
+            wtlResponse = WebToLeadResponse.getNullErrorResponse();
+        } else {
+            data = wtlData instanceof WebToLeadData ? (WebToLeadData) wtlData : getDataFromString((String) wtlData);
+            logger.info("Function invoked: webtolead");
+            try {
+                logger.info("Executing webtolead service function...");
+                wtlResponse = execute();
+
+            } catch (Exception ex) {
+                logger.severe("Unexpected event occured: " + ex.getMessage());
+                wtlResponse = WebToLeadResponse.getInternalServerErrorResponse();
+
+            }
+        }
+        if (wtlResponse != null) {
+            wtlResponseMessage = httpRequest.createResponseBuilder(wtlResponse.getStatusCode())
+                .body(wtlResponse.getMessageAsJSON() + "\n" + (data == null ? " null " : data.toString()))
+                .header("Content-Type", "application/json")
+                .build();
+        }
+        return wtlResponseMessage;
+    }
+
+    private WebToLeadData getDataFromString(String str) {
+        String decodedStr = URLDecoder.decode(str, StandardCharsets.UTF_8);
+        List<String> parameters = Stream.of(decodedStr.split("&")).map(String::new).toList();
+        Map<String, String> keyValues = new HashMap<>();
+        for (String kv : parameters) {
+            String[] keypair = kv.split("=");
+            keyValues.put(keypair[0], keypair[1]);
+        }
+        Gson gson = new Gson();
+        String jsonString = gson.toJson(keyValues);
+        return gson.fromJson(jsonString, WebToLeadData.class);
     }
 
     public WebToLeadResponse execute() {
-        wtlLogger.info("WebToLeadHandler execute...");
-
-        WebToLeadData wtlData = this.httpRequest.getBody().orElse(null);
-
-        if(wtlData == null) {
+        logger.info("WebToLeadHandler execute...");
+        T wtlData = httpRequest.getBody().orElse(null);
+        if (wtlData == null) {
             return WebToLeadResponse.getNullErrorResponse();
         }
-
-        if(validateData(wtlData)) {
-            // DO STUFF
-            wtlLogger.info("WebToLeadHandler validation passed...");
-            wtlLogger.info("WebToLeadHandler DO STUFF...");
+        WebToLeadData data = wtlData instanceof WebToLeadData ? (WebToLeadData) wtlData : getDataFromString((String) wtlData); // TODO: check if not WebToLeadData and not String
+        if (validateWebToLeadData(data)) {
+            logger.info("WebToLeadHandler validation passed...");
+            logger.info("WebToLeadHandler DO STUFF...");
             return WebToLeadResponse.getOkResponse();
         } else {
-            wtlLogger.warning("WebToLeadHandler validation failed...");
+            logger.warning("WebToLeadHandler validation failed...");
             return WebToLeadResponse.getRequiredFieldMissingErrorResponse();
         }
     }
 
-    private Boolean validateData(WebToLeadData wtlData) {
-        Boolean retStatus = true;
+    private Boolean validateWebToLeadData(WebToLeadData wtlData) {
+        boolean retStatus = true;
 
         if(wtlData.getFirstName().isBlank()) {
-            this.wtlLogger.warning("Empty firstname...");
+            logger.warning("Empty firstname...");
             retStatus = false;
         }
 
         if(wtlData.getLastName().isBlank()) {
-            this.wtlLogger.warning("Empty lastname...");
+            logger.warning("Empty lastname...");
             retStatus = false;
         }
 
         if(wtlData.getEmailAddress().isBlank()) {
-            this.wtlLogger.warning("Empty email address...");
+            logger.warning("Empty email address...");
             retStatus = false;
         }
 
         if(wtlData.getZipCode().isBlank()) {
-            this.wtlLogger.warning("Empty zip code...");
+            logger.warning("Empty zip code...");
             retStatus = false;
         }
 

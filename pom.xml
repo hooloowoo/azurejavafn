@@ -19,6 +19,18 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.22</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.microsoft.azure.functions</groupId>
             <artifactId>azure-functions-java-library</artifactId>
             <version>${azure.functions.java.library.version}</version>
@@ -36,6 +48,11 @@
             <artifactId>mockito-core</artifactId>
             <version>2.23.4</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
+            <version>3.1.2</version>
         </dependency>
     </dependencies>
 
@@ -64,7 +81,7 @@
                     <appServicePlanName>java-functions-app-service-plan</appServicePlanName>
                     <!-- function app region-->
                     <!-- refers https://github.com/microsoft/azure-maven-plugins/wiki/Azure-Functions:-Configuration-Details#supported-regions for all valid values -->
-                    <region>westus</region>
+                    <region>eastus</region>
                     <!-- function pricingTier, default to be consumption if not specified -->
                     <!-- refers https://github.com/microsoft/azure-maven-plugins/wiki/Azure-Functions:-Configuration-Details#supported-pricing-tiers for all valid values -->
                     <!-- <pricingTier></pricingTier> -->
