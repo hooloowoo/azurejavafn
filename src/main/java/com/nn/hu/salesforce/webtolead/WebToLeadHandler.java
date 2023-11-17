@@ -6,6 +6,7 @@ import com.microsoft.azure.functions.HttpRequestMessage;
 import com.microsoft.azure.functions.HttpResponseMessage;
 import com.nn.hu.salesforce.webtolead.data.WebToLeadData;
 import com.nn.hu.salesforce.webtolead.data.WebToLeadResponse;
+import org.apache.http.client.utils.URLEncodedUtils;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -49,7 +50,7 @@ public class WebToLeadHandler<T> {
         }
         if (wtlResponse != null) {
             wtlResponseMessage = httpRequest.createResponseBuilder(wtlResponse.getStatusCode())
-                .body(wtlResponse.getMessageAsJSON() + "\n" + (data == null ? " null " : data.toString()))
+                .body(wtlResponse.getMessageAsJSON())
                 .header("Content-Type", "application/json")
                 .build();
         }
@@ -57,6 +58,9 @@ public class WebToLeadHandler<T> {
     }
 
     private WebToLeadData getDataFromString(String str) {
+
+        // URLEncodedUtils.parse(str, StandardCharsets.UTF_8); The Apache method is much more complex without any benefit
+
         String decodedStr = URLDecoder.decode(str, StandardCharsets.UTF_8);
         List<String> parameters = Stream.of(decodedStr.split("&")).map(String::new).toList();
         Map<String, String> keyValues = new HashMap<>();
