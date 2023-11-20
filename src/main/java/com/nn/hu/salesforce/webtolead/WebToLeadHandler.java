@@ -6,7 +6,6 @@ import com.microsoft.azure.functions.HttpRequestMessage;
 import com.microsoft.azure.functions.HttpResponseMessage;
 import com.nn.hu.salesforce.webtolead.data.WebToLeadData;
 import com.nn.hu.salesforce.webtolead.data.WebToLeadResponse;
-import org.apache.http.client.utils.URLEncodedUtils;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -66,7 +65,7 @@ public class WebToLeadHandler<T> {
         Map<String, String> keyValues = new HashMap<>();
         for (String kv : parameters) {
             String[] keypair = kv.split("=");
-            keyValues.put(keypair[0], keypair[1]);
+            if (keypair.length > 1) keyValues.put(keypair[0], keypair[1]);
         }
         Gson gson = new Gson();
         String jsonString = gson.toJson(keyValues);
