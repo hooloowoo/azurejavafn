@@ -65,7 +65,13 @@ public class WebToLeadHandler<T> {
         Map<String, String> keyValues = new HashMap<>();
         for (String kv : parameters) {
             String[] keypair = kv.split("=");
-            if (keypair.length > 1) keyValues.put(keypair[0], keypair[1]);
+            if (keypair.length == 2) {
+                keyValues.put(keypair[0], keypair[1]);
+            } else if (keypair.length == 1) {
+                keyValues.put(keypair[0], "");
+            } else {
+                logger.warning("Invalid keypair: " + kv);
+            }
         }
         Gson gson = new Gson();
         String jsonString = gson.toJson(keyValues);

@@ -16,3 +16,6 @@ mvn azure-functions:run
 
 Deploy to Azure:
 mvn azure-functions:deploy
+
+
+curl --dump-header x.xxx -X POST http://localhost:7071/api/v1/webtolead -H "Content-Type: application/x-www-form-urlencoded" -d 'lastname=Test&firstname=Elek&emailaddress=example%40example.com&zipcode=3000&telephone'
