@@ -1,9 +1,6 @@
 package com.nn.hu.salesforce.webtolead;
 
-import com.microsoft.azure.functions.ExecutionContext;
-import com.microsoft.azure.functions.HttpMethod;
-import com.microsoft.azure.functions.HttpRequestMessage;
-import com.microsoft.azure.functions.HttpResponseMessage;
+import com.microsoft.azure.functions.*;
 import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.HttpTrigger;
@@ -12,6 +9,21 @@ import com.nn.hu.salesforce.webtolead.data.WebToLeadData;
 import java.util.Optional;
 
 public class WebToLeadService {
+
+
+    @FunctionName("FromRedirect")
+    public HttpResponseMessage redirect(
+            @HttpTrigger(name = "req",
+                    methods = {HttpMethod.GET},
+                    authLevel = AuthorizationLevel.ANONYMOUS,
+                    route = "v1/webtolead")
+            HttpRequestMessage<Optional<String>> request,
+            final ExecutionContext context) {
+
+        return request.createResponseBuilder(HttpStatus.FOUND).header("Location","https://webtoleadnn.z13.web.core.windows.net/").build();
+
+    }
+
 
     @FunctionName("WebToLeadServiceJson")
     public HttpResponseMessage runJson(
